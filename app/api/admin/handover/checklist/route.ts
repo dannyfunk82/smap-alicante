@@ -1,0 +1,6 @@
+import { NextResponse } from "next/server";
+import { currentAdminSession } from "@/lib/admin";
+import { db } from "@/lib/db";
+import { recordAudit } from "@/lib/audit";
+import { requestIp } from "@/lib/request";
+export async function PATCH(request:Request){const session=await currentAdminSession();if(!session)return NextResponse.json({error:"Forbidden"},{status:403});const body=await request.json();const key=String(body.key??"");const completed=Boolean(body.completed);const evidence=String(body.evidence??"").trim()||null;const owner=String(body.owner??"").trim()||null;const result=await db.query(`UPDATE handover_checklist SET completed=$2,evidence=$3,owner=$4,completed_by=CASE WHEN $2 THEN $5 ELSE NULL END,completed_at=CASE WHEN $2 THEN NOW() ELSE NULL END,updated_at=NOW() WHERE item_key=$1 RETURNING item_key`,[key,completed,evidence,owner,session.sub]);if(!result.rowCount)return NextResponse.json({error:"Item not found"},{status:404});await recordAudit({actorUserId:session.sub,actorEmail:session.email,action:"admin.handover_checklist_updated",entityType:"handover_checklist",entityId:key,ipAddress:requestIp(request),details:{completed,evidence:Boolean(evidence)}});return NextResponse.json({ok:true});}

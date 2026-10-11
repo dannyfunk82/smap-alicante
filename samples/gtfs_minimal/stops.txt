@@ -1,0 +1,4 @@
+stop_id,stop_code,stop_name,stop_lat,stop_lon,wheelchair_boarding
+P1,P1,Plaza Demo,38.3450,-0.4930,1
+P2,P2,Mercado Demo,38.3465,-0.4905,1
+P3,P3,Puerto Demo,38.3470,-0.4875,1

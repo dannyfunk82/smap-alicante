@@ -1,0 +1,15 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+const apiKey = process.env.TRANSITLAND_API_KEY || process.argv.find((arg) => arg.startsWith("--apiKey="))?.split("=")[1];
+if (!apiKey) throw new Error("Configura TRANSITLAND_API_KEY oppure passa --apiKey=...");
+const outArg = process.argv.find((arg) => arg.startsWith("--out="))?.slice(6);
+const output = path.resolve(outArg || "data/alicante_gtfs/alicante_gtfs.zip");
+await fs.mkdir(path.dirname(output), { recursive: true });
+const url = "https://transit.land/api/v2/rest/feeds/f-autobuses~urbanos~de~alicante/download_latest_feed_version";
+const response = await fetch(url, { headers: { apikey: apiKey, "user-agent": "SMAP/1.1 Alicante GTFS importer" } });
+if (!response.ok) throw new Error(`Download GTFS non riuscito: HTTP ${response.status} ${await response.text()}`);
+const bytes = new Uint8Array(await response.arrayBuffer());
+if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) throw new Error("La risposta ricevuta non è un archivio ZIP GTFS valido");
+await fs.writeFile(output, bytes);
+console.log(`GTFS Alicante scaricato: ${output} (${bytes.length} byte)`);
+console.log("Attribution richiesta: Powered by MITRAMS — https://www.transportes.gob.es/");

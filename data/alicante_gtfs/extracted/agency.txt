@@ -1,0 +1,2 @@
+﻿agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone,agency_fare_url,agency_email
+05,UTE MIA,https://alicante.vectalia.es/,Europe/Madrid,ES,965 24 19 11,,info@vectalia.es

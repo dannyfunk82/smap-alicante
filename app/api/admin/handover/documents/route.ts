@@ -1,0 +1,6 @@
+import { NextResponse } from "next/server";
+import { currentAdminSession } from "@/lib/admin";
+import { db } from "@/lib/db";
+import { recordAudit } from "@/lib/audit";
+import { requestIp } from "@/lib/request";
+export async function PATCH(request:Request){const session=await currentAdminSession();if(!session)return NextResponse.json({error:"Forbidden"},{status:403});const body=await request.json();const key=String(body.key??"");const status=String(body.status??"");if(!["draft","reviewed","approved"].includes(status))return NextResponse.json({error:"Invalid status"},{status:400});const owner=String(body.owner??"").trim()||null;const notes=String(body.notes??"").trim();const result=await db.query(`UPDATE handover_documents SET status=$2,owner=$3,notes=$4,last_reviewed_at=CASE WHEN $2 IN ('reviewed','approved') THEN NOW() ELSE last_reviewed_at END,updated_by=$5,updated_at=NOW() WHERE document_key=$1 RETURNING document_key`,[key,status,owner,notes,session.sub]);if(!result.rowCount)return NextResponse.json({error:"Document not found"},{status:404});await recordAudit({actorUserId:session.sub,actorEmail:session.email,action:"admin.handover_document_updated",entityType:"handover_document",entityId:key,ipAddress:requestIp(request),details:{status}});return NextResponse.json({ok:true});}
