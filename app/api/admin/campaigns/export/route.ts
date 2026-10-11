@@ -1,3 +1,4 @@
+﻿export const dynamic = "force-dynamic";
 import { currentAdminSession } from "@/lib/admin";
 import { db } from "@/lib/db";
 
@@ -13,3 +14,4 @@ export async function GET(request:Request){
   const lines=[["response_id","submitted_at","participant","position","question_es","question_en","answer"].map(csv).join(","),...result.rows.map((r:Record<string,any>)=>[r.response_id,new Date(r.submitted_at).toISOString(),anonymous?"anonymous":r.email,r.position,r.prompt_es,r.prompt_en,JSON.stringify(r.answer)].map(csv).join(","))];
   return new Response(`\uFEFF${lines.join("\r\n")}`,{headers:{"Content-Type":"text/csv; charset=utf-8","Content-Disposition":`attachment; filename="${survey.rows[0].code}-responses.csv"`}});
 }
+
