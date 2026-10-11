@@ -7,9 +7,6 @@ FROM node:24-alpine AS builder
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-ENV DATABASE_URL=postgresql://smap:smap_dev_password@127.0.0.1:5432/smap
-ENV AUTH_SECRET=build-only-secret-change-at-runtime-1234567890
-ENV INTEGRATION_API_KEY=build-only-integration-key
 ENV SMAP_ENVIRONMENT=production
 ENV NEXT_DEPLOYMENT_ID=container-1-0-0
 RUN npm run build
